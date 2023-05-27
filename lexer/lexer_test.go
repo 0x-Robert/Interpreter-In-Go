@@ -24,9 +24,11 @@ func TestNextToken(t *testing.T) {
 	}
 }
 
+//신규 입력 
 l := New(input)
 
 for i, tt := range tests{
+	//넥스트 토큰 
 	tok := l.NextToken()
 	if tok.Type != tt.expectedType{
 		t.Fatalf("tests[%d] - tokentype wrong. expected=%q got=%q", i, tt.expectedType, tok.Type)
