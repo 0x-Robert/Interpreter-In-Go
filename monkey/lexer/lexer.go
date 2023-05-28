@@ -1,8 +1,7 @@
 package lexer
 
 import (
-	'go/token'
-	'monkey/token'
+	"monkey/token"
 )
 
 // position과 readPosition 모두 입력문자열에 있는 문자에 인덱스로 접근하기 위해 사용된다.
@@ -54,8 +53,16 @@ func (l *Lexer) NextToken() token.Token {
 	case '}':
 		tok = newToken(token.RBRACE, l.ch)
 	case 0:
-		tok.Literal = ''
+		tok.Literal = ""
 		tok.Type = token.EOF
+	default:
+		if isLetter(l.ch) {
+			tok.Literal = l.readIdentifier()
+			return tok
+		} else {
+			tok = newToken(token.ILLEGAL, l.ch)
+
+		}
 	}
 	l.readChar()
 	return tok
@@ -69,4 +76,19 @@ func New(input string) *Lexer {
 	l := &Lexer{input: input}
 	l.readChar()
 	return l
+}
+
+//현재 토큰의 Literal 필드를 채운다. 
+func (l *Lexer) readIdentifier() string {
+	position := l.position
+	for isLetter(l.ch) {
+		l.readChar()
+	}
+	return l.input[position:l.position]
+}
+
+// 이 책에서 글자란 isLetter 함수가 참으로 판별하는 문자(character)을 뜻한다.
+func isLetter(ch byte) bool {
+	//_ 문자를 글자로 다루겠다는 뜻이고 식별자와 예약어에 사용하겠다는 뜻
+	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
 }

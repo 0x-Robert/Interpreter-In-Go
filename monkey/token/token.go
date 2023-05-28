@@ -32,3 +32,22 @@ const (
 	FUNCTION = "FUNCTION"
 	LET      = "LET"
 )
+
+//토큰 리터럴에 맞는 TokenType을 반환할 함수를 정의함
+
+// 식별자가 예약어인지 정의한 함수
+var keywords = map[string]TokenType{
+	"fn":  FUNCTION,
+	"let": LET,
+}
+
+// 키워드 테이블을 검사해서 주어진 식별자가 예약어인지 아닌지 살펴본다.
+// 만약 예약어라면 TokenType 상수를 반환한다.
+// 만약 예약어가 아니라면 그냥 token.IDENT를 반환한다.  token.IDENT는 사용자 정의 식별자를 나타내는 TokenType이다.
+// 다음 함수를 통해 식별자와 예약어 렉싱을 마무리할 수 있다.
+func LookupIdent(ident string) TokenType {
+	if tok, ok := keywords[ident]; ok {
+		return tok
+	}
+	return IDENT
+}
