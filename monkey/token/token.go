@@ -16,8 +16,18 @@ const (
 	INT   = "INT"   //1343456
 
 	//연산자
-	ASSIGN = "="
-	PLUS   = "+"
+	ASSIGN   = "="
+	PLUS     = "+"
+	MINUS    = "-"
+	BANG     = "!"
+	ASTERISK = "*"
+	SLASH    = "/"
+
+	LT = "<"
+	GT = ">"
+
+	EQ     = "=="
+	NOT_EQ = "!="
 
 	//구분자
 	COMMA     = ","
@@ -28,17 +38,27 @@ const (
 	LBRACE = "{"
 	RBRACE = "}"
 
-	//예약어
+	// Keywords
 	FUNCTION = "FUNCTION"
 	LET      = "LET"
+	TRUE     = "TRUE"
+	FALSE    = "FALSE"
+	IF       = "IF"
+	ELSE     = "ELSE"
+	RETURN   = "RETURN"
 )
 
 //토큰 리터럴에 맞는 TokenType을 반환할 함수를 정의함
 
 // 식별자가 예약어인지 정의한 함수
 var keywords = map[string]TokenType{
-	"fn":  FUNCTION,
-	"let": LET,
+	"fn":     FUNCTION,
+	"let":    LET,
+	"true":   TRUE,
+	"false":  FALSE,
+	"if":     IF,
+	"else":   ELSE,
+	"return": RETURN,
 }
 
 // 키워드 테이블을 검사해서 주어진 식별자가 예약어인지 아닌지 살펴본다.
