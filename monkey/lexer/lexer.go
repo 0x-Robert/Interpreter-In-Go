@@ -45,6 +45,8 @@ func (l *Lexer) NextToken() token.Token {
 
 	switch l.ch {
 	case '=':
+		//렉서가 입력에서 ==을 만나면 렉서는 token.EQ 하나를 만드는 게 아니라 token.ASSIGN을 두 개 생성한다.
+		//그래서 peekChar 메서드를 사용해야한다.
 		if l.peekChar() == '=' {
 			ch := l.ch
 			l.readChar()
@@ -106,6 +108,9 @@ func (l *Lexer) NextToken() token.Token {
 	l.readChar()
 	return tok
 }
+
+//readChar 함수와 비슷한 기능
+//다음에 나올 입력을 미리 살펴본다 = peek
 
 func (l *Lexer) peekChar() byte {
 	if l.readPosition >= len(l.input) {

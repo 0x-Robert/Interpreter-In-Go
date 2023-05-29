@@ -18,3 +18,8 @@
 - 렉서는 입력받은 코드를 훑어가면서 토큰을 인식할 때마다 결과를 출력한다.
 - 버퍼도 필요없고 토큰 저장도 필요없다. 다음 토큰을 출력하는 NextToken메서드 하나면 충분하다.
 
+## REPL(Read Eval Print Loop)
+
+- 대다수의 인터프리터 언어는 이 REPL을 가지고 있다. (JavaScript, Python, Ruby, Lisp류의 언어 등)
+- REPL은 콘솔 혹은 대화형 모드라고 부른다.
+- REPL은 입력을 읽고(Read), 인터프리터에 보내 평가하고(Eval), 인터프리터의 결과물을 출력하고(Print) 이런 동작을 반복하기(Loop) 때문에 REPL(Read, Eval, Print, Loop)이라고 부른다.
