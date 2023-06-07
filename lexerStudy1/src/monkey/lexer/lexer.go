@@ -8,7 +8,7 @@ import (
 // 입력문자열을 가리키는 포인터가 두 개인 이유는 다음 처리 대상을 알아내려면 입력 문자열에서 다음 문자를 미리 살펴봄과 동시에 현재 문자를 보존할 수 있어야 하기 때문이다.
 type Lexer struct {
 	input        string
-	position     int  //입력해서 현재 위치(현재 문자를 가리킴)
+	position     int  //입력에서 현재 위치(현재 문자를 가리킴)
 	readPosition int  //입력에서 현재 읽는 위치 (현재 문자의 다음을 가리킴)
 	ch           byte //현재 조사하고 있는 문자, 현재문자가 곧 byte 타입을 갖는 ch다.
 }
@@ -38,9 +38,12 @@ func (l *Lexer) readChar() {
 	//유니코드 지원은 독자가 알아서 개선하기..
 }
 
+// 렉서의 핵심 함수다.  렉서는 소스코드를 입력받아서 토큰열로 출력해주는 기능이 핵심이다.
 func (l *Lexer) NextToken() token.Token {
+	//token.go에서 정의한 token
 	var tok token.Token
 
+	//공백처리를 위한 함수
 	l.skipWhitespace()
 
 	switch l.ch {
@@ -111,7 +114,7 @@ func (l *Lexer) NextToken() token.Token {
 
 //readChar 함수와 비슷한 기능
 //다음에 나올 입력을 미리 살펴본다 = peek
-
+//l.position이나 l.readPosition을 증가시키지 않는다.
 func (l *Lexer) peekChar() byte {
 	if l.readPosition >= len(l.input) {
 		return 0
@@ -120,7 +123,9 @@ func (l *Lexer) peekChar() byte {
 	}
 }
 
+// 토큰타입과 현재 조사하고 있는 문자를 입력으로 받는다. 반환은 토큰타입으로 반환한다.
 func newToken(tokenType token.TokenType, ch byte) token.Token {
+	//토큰 타입과 토큰스트링 리터럴로 반환
 	return token.Token{Type: tokenType, Literal: string(ch)}
 }
 
