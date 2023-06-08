@@ -1,0 +1,230 @@
+=== RUN   TestOperatorPrecedenceParsing
+BEGIN parseExpressionStatement
+	BEGIN parseExpression
+		BEGIN parsePrefixExpression
+			BEGIN parseExpression
+			END parseExpression
+		END parsePrefixExpression
+		BEGIN parseInfixExpression
+			BEGIN parseExpression
+			END parseExpression
+		END parseInfixExpression
+	END parseExpression
+END parseExpressionStatement
+BEGIN parseExpressionStatement
+	BEGIN parseExpression
+		BEGIN parsePrefixExpression
+			BEGIN parseExpression
+				BEGIN parsePrefixExpression
+					BEGIN parseExpression
+					END parseExpression
+				END parsePrefixExpression
+			END parseExpression
+		END parsePrefixExpression
+	END parseExpression
+END parseExpressionStatement
+BEGIN parseExpressionStatement
+	BEGIN parseExpression
+		BEGIN parseInfixExpression
+			BEGIN parseExpression
+			END parseExpression
+		END parseInfixExpression
+		BEGIN parseInfixExpression
+			BEGIN parseExpression
+			END parseExpression
+		END parseInfixExpression
+	END parseExpression
+END parseExpressionStatement
+BEGIN parseExpressionStatement
+	BEGIN parseExpression
+		BEGIN parseInfixExpression
+			BEGIN parseExpression
+			END parseExpression
+		END parseInfixExpression
+		BEGIN parseInfixExpression
+			BEGIN parseExpression
+			END parseExpression
+		END parseInfixExpression
+	END parseExpression
+END parseExpressionStatement
+BEGIN parseExpressionStatement
+	BEGIN parseExpression
+		BEGIN parseInfixExpression
+			BEGIN parseExpression
+			END parseExpression
+		END parseInfixExpression
+		BEGIN parseInfixExpression
+			BEGIN parseExpression
+			END parseExpression
+		END parseInfixExpression
+	END parseExpression
+END parseExpressionStatement
+BEGIN parseExpressionStatement
+	BEGIN parseExpression
+		BEGIN parseInfixExpression
+			BEGIN parseExpression
+			END parseExpression
+		END parseInfixExpression
+		BEGIN parseInfixExpression
+			BEGIN parseExpression
+			END parseExpression
+		END parseInfixExpression
+	END parseExpression
+END parseExpressionStatement
+BEGIN parseExpressionStatement
+	BEGIN parseExpression
+		BEGIN parseInfixExpression
+			BEGIN parseExpression
+				BEGIN parseInfixExpression
+					BEGIN parseExpression
+					END parseExpression
+				END parseInfixExpression
+			END parseExpression
+		END parseInfixExpression
+	END parseExpression
+END parseExpressionStatement
+BEGIN parseExpressionStatement
+	BEGIN parseExpression
+		BEGIN parseInfixExpression
+			BEGIN parseExpression
+				BEGIN parseInfixExpression
+					BEGIN parseExpression
+					END parseExpression
+				END parseInfixExpression
+			END parseExpression
+		END parseInfixExpression
+		BEGIN parseInfixExpression
+			BEGIN parseExpression
+				BEGIN parseInfixExpression
+					BEGIN parseExpression
+					END parseExpression
+				END parseInfixExpression
+			END parseExpression
+		END parseInfixExpression
+		BEGIN parseInfixExpression
+			BEGIN parseExpression
+			END parseExpression
+		END parseInfixExpression
+	END parseExpression
+END parseExpressionStatement
+BEGIN parseExpressionStatement
+	BEGIN parseExpression
+		BEGIN parseExpression
+		END parseExpression
+		BEGIN parseInfixExpression
+			BEGIN parseExpression
+				BEGIN parseExpression
+				END parseExpression
+			END parseExpression
+		END parseInfixExpression
+	END parseExpression
+END parseExpressionStatement
+BEGIN parseExpressionStatement
+	BEGIN parseExpression
+		BEGIN parsePrefixExpression
+			BEGIN parseExpression
+				BEGIN parseExpression
+				END parseExpression
+			END parseExpression
+		END parsePrefixExpression
+		BEGIN parseInfixExpression
+			BEGIN parseExpression
+				BEGIN parseExpression
+				END parseExpression
+			END parseExpression
+		END parseInfixExpression
+	END parseExpression
+END parseExpressionStatement
+BEGIN parseExpressionStatement
+	BEGIN parseExpression
+		BEGIN parseExpression
+		END parseExpression
+		BEGIN parseInfixExpression
+			BEGIN parseExpression
+				BEGIN parseExpression
+				END parseExpression
+			END parseExpression
+		END parseInfixExpression
+		BEGIN parseInfixExpression
+			BEGIN parseExpression
+				BEGIN parseExpression
+				END parseExpression
+				BEGIN parseInfixExpression
+					BEGIN parseExpression
+						BEGIN parseExpression
+						END parseExpression
+					END parseExpression
+				END parseInfixExpression
+			END parseExpression
+		END parseInfixExpression
+	END parseExpression
+END parseExpressionStatement
+BEGIN parseExpressionStatement
+	BEGIN parseExpression
+		BEGIN parseExpression
+		END parseExpression
+		BEGIN parseInfixExpression
+			BEGIN parseExpression
+				BEGIN parseExpression
+				END parseExpression
+			END parseExpression
+		END parseInfixExpression
+		BEGIN parseInfixExpression
+			BEGIN parseExpression
+				BEGIN parseExpression
+				END parseExpression
+				BEGIN parseInfixExpression
+					BEGIN parseExpression
+						BEGIN parseExpression
+						END parseExpression
+					END parseExpression
+				END parseInfixExpression
+			END parseExpression
+		END parseInfixExpression
+	END parseExpression
+END parseExpressionStatement
+BEGIN parseExpressionStatement
+	BEGIN parseExpression
+		BEGIN parseExpression
+		END parseExpression
+		BEGIN parseInfixExpression
+			BEGIN parseExpression
+				BEGIN parseExpression
+				END parseExpression
+				BEGIN parseInfixExpression
+					BEGIN parseExpression
+						BEGIN parseExpression
+						END parseExpression
+					END parseExpression
+				END parseInfixExpression
+			END parseExpression
+		END parseInfixExpression
+		BEGIN parseInfixExpression
+			BEGIN parseExpression
+				BEGIN parseExpression
+				END parseExpression
+				BEGIN parseInfixExpression
+					BEGIN parseExpression
+						BEGIN parseExpression
+						END parseExpression
+					END parseExpression
+				END parseInfixExpression
+				BEGIN parseInfixExpression
+					BEGIN parseExpression
+						BEGIN parseExpression
+						END parseExpression
+						BEGIN parseInfixExpression
+							BEGIN parseExpression
+								BEGIN parseExpression
+								END parseExpression
+							END parseExpression
+						END parseInfixExpression
+					END parseExpression
+				END parseInfixExpression
+			END parseExpression
+		END parseInfixExpression
+	END parseExpression
+END parseExpressionStatement
+--- PASS: TestOperatorPrecedenceParsing (0.00s)
+PASS
+ok  	monkey/parser	(cached)

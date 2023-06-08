@@ -8,6 +8,20 @@ import (
 	"strconv"
 )
 
+// 우선순위 테이블
+// 하단의 연산자 우선순위에 따라 token.PLUS와 token.MINUS는 우선순위가 같다.
+var precedences = map[token.TokenType]int{
+	token.EQ:       EQUALS,
+	token.NOT_EQ:   EQUALS,
+	token.LT:       LESSGREATER,
+	token.GT:       LESSGREATER,
+	token.PLUS:     SUM,
+	token.MINUS:    SUM,
+	token.SLASH:    PRODUCT,
+	token.ASTERISK: PRODUCT,
+}
+
+// 연산자 우선순위
 const (
 	_ int = iota //iota를 이용해 뒤에 나오는 상수에게 1씩 증가하는 숫자를 값으로제공한다.  _는 0이되고 이후에 나오는 상수는 1부터 7까지 할당받는다.
 	LOWEST
@@ -52,8 +66,68 @@ func New(l *lexer.Lexer) *Parser {
 	p.prefixParseFns = make(map[token.TokenType]prefixParseFn)
 	p.registerPrefix(token.IDENT, p.parseIdentifier)
 	p.registerPrefix(token.INT, p.parseIntegerLiteral)
+	p.registerPrefix(token.BANG, p.parsePrefixExpression) //token.BANG과 token.MINUS는 연관된 파싱 함수가 같다.
+	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
+
+	p.infixParseFns = make(map[token.TokenType]infixParseFn)
+	p.registerInfix(token.PLUS, p.parseInfixExpression)
+	p.registerInfix(token.MINUS, p.parseInfixExpression)
+	p.registerInfix(token.SLASH, p.parseInfixExpression)
+	p.registerInfix(token.ASTERISK, p.parseInfixExpression)
+	p.registerInfix(token.EQ, p.parseInfixExpression)
+	p.registerInfix(token.NOT_EQ, p.parseInfixExpression)
+	p.registerInfix(token.LT, p.parseInfixExpression)
+	p.registerInfix(token.GT, p.parseInfixExpression)
 
 	return p
+}
+
+// parsePrefixExpression과 다른 점은 left를 인수로 받는 점
+func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
+	defer untrace(trace("parseInfixExpression"))
+	expression := &ast.InfixExpression{
+		Token:    p.curToken,
+		Operator: p.curToken.Literal,
+		Left:     left,
+	}
+	//현재 토큰의 우선순위를 precedence에 넣어둠
+	precedence := p.curPrecedence()
+	//토큰을 진행시킴
+	p.nextToken()
+	//Right필드에 parseExpression 함수를 호출한 결과값을 담는다.
+	expression.Right = p.parseExpression(precedence)
+	return expression
+}
+
+// p.peekToken이 갖는 토큰타입과 연관된 우선순위를 반환한다. 타입을 못찾으면 LOWEST를 반환한다.
+func (p *Parser) peekPrecedence() int {
+	if p, ok := precedences[p.peekToken.Type]; ok {
+		return p
+	}
+	return LOWEST //연산자가 가질 수 있는 우선순위 중 가장 낮은 값
+}
+
+// p.curToken이 갖는 토큰타입과 연관된 우선순위를 반환한다. 타입을 못찾으면 LOWEST를 반환한다.
+func (p *Parser) curPrecedence() int {
+	if p, ok := precedences[p.curToken.Type]; ok {
+		return p
+	}
+	return LOWEST
+}
+
+func (p *Parser) parsePrefixExpression() ast.Expression {
+	defer untrace(trace("parsePrefixExpression"))
+	//ast.PrefixExpression를 만든다.
+	expression := &ast.PrefixExpression{
+		Token:    p.curToken,
+		Operator: p.curToken.Literal,
+	}
+
+	p.nextToken()
+
+	expression.Right = p.parseExpression(PREFIX)
+
+	return expression
 }
 
 func (p *Parser) parseIdentifier() ast.Expression {
@@ -167,6 +241,7 @@ func (p *Parser) parseStatement() ast.Statement {
 // 표현식을 파싱하는 함수
 // 반환값은 *ast.ExpressionStatement
 func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
+	defer untrace(trace("parseExpressionStatement"))
 	stmt := &ast.ExpressionStatement{Token: p.curToken}
 	stmt.Expression = p.parseExpression(LOWEST)
 
@@ -177,17 +252,39 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	return stmt
 }
 
+func (p *Parser) noPrefixParseFnError(t token.TokenType) {
+	msg := fmt.Sprintf("no prefix parse function for %s found", t)
+	p.errors = append(p.errors, msg)
+}
+
 // parseExpression은 p.curToken.Type이 전위로 연관된 파싱함수가 있는지 검사한다. 만약 그런 파싱함수가 있으면 호출하고 없다면 nil을 반환한다.
+// 프랫파서의 요체
 func (p *Parser) parseExpression(precedence int) ast.Expression {
+	defer untrace(trace("parseExpression"))
 	prefix := p.prefixParseFns[p.curToken.Type]
 	if prefix == nil {
+		p.noPrefixParseFnError(p.curToken.Type)
 		return nil
 	}
 	leftExp := prefix()
+
+	//반복문 몸체(body)에서 parseExpression 메서드는 다음 토큰에 맞는 infixParseFn을 찾는다.
+	for !p.peekTokenIs(token.SEMICOLON) && precedence < p.peekPrecedence() {
+		infix := p.infixParseFns[p.peekToken.Type]
+		if infix == nil {
+			return leftExp
+		}
+
+		p.nextToken()
+
+		leftExp = infix(leftExp)
+	}
+
 	return leftExp
 }
 
 func (p *Parser) parseIntegerLiteral() ast.Expression {
+	defer untrace(trace("parseExpression"))
 	lit := &ast.IntegerLiteral{Token: p.curToken}
 	value, err := strconv.ParseInt(p.curToken.Literal, 0, 64)
 	if err != nil {

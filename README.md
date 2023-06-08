@@ -7,6 +7,8 @@
 - 토큰은 자체로 쉽게 분류할 수 있는 작은 자료구조다.
 - 파서는 전달받은 토큰열을 추상구문트리(Abstract Syntax Tree)로 바꾼다.
 
+<img src="./img/interpreter1.png">
+
 ## 토큰 정의하기
 
 - 변수이름은 식별자로 부른다.
@@ -31,6 +33,10 @@
 - 파서는 (주로 문자로 된) 입력 데이터를 받아 자료구조를 만들어 내는 소프트웨어 컴포넌트다. 자료구조 형태는 파스 트리(parse tree), 추상구문트리일 수 있고, 그렇지 않으면 다른 계층 구조일 수도 있다.
   파서는 자료구조를 만들면서 입력에 대응하는 구조화된 표현을 더하기도 구문이 올바른지 검사하기도 한다. (중략) 보통은 파서 앞에 어휘 분석기(lexical analyzer)를 따로 두기도 한다.
 
+### 다음은 ast가 만들어지는 과정을 그림으로 나타낸 것이다.
+
+  <img src="./img/interpreter2.png">
+
 - 파서는 입력을 표현하는 자료구조로 변환한다.
 - 다음과 같은 자바스크립트 Json 파서가 있다. 개념수준에서는 프로그래밍 언어의 파서와 Json 파서는 개념이 같다.
 
@@ -52,6 +58,22 @@
 - 하향식의 예로는 재귀적 하향 파싱(recursive decent parsing), 얼리 파싱(Earley parsing), 예측적 파싱(predictive parsing)등은 모두 하향식 파싱을 변형한 것들이다.
 - 여기서는 재귀적 하향 파서를 만들 것이다. 이 파서는 프랫 파서(Pratt parser)라고 불리기도 한다. 왜냐하면 최초로 만든 사람의 이름이 본 프랫(Vaughan Pratt)이다.
 - 하향식 파서는 AST의 루트노드를 생성하는 것으로 시작해서 점차 아래쪽으로 파싱해 나간다.
+
+## 전위 표현식은 단항 표현식(unary expression)이라고 부른다.
+
+<prefix operator><expression>;
+
+## 중위 표현식은 이항 표현식(binary expression)이라고 부른다.
+
+<expression> <infix operator> <expression>
+
+#### 프랫파싱은 어떻게 동작하는가
+
+##### 다음은 1 + 2 + 3 ;을 파싱했을 때 나온 결과물이다.
+
+<img src="./img/interpreter3.png">
+
+<img src="./img/interpreter4.png">
 
 #### 참고(책에서 나오는 여러 자료 및 글)
 

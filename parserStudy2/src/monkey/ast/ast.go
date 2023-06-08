@@ -55,10 +55,11 @@ func (p *Program) TokenLiteral() string {
 	}
 }
 
+// 전위 연산자
 type PrefixExpression struct {
-	Token    token.Token //ㅓㄴ위 연산자 토큰, 예를 들면 !, -
-	Operator string
-	Right    Expression
+	Token    token.Token //전위 연산자 토큰, 예를 들면 !, -
+	Operator string      // - or !를 담을 필드
+	Right    Expression  //연산자의 오른쪽에 나올 표현식을 담을 필드
 }
 
 func (pe *PrefixExpression) expressionNode()      {}
@@ -69,6 +70,28 @@ func (pe *PrefixExpression) String() string {
 	out.WriteString("(")
 	out.WriteString(pe.Operator)
 	out.WriteString(pe.Right.String())
+	out.WriteString(")")
+
+	return out.String()
+}
+
+// 중위 연산자
+type InfixExpression struct {
+	Token    token.Token //연산자 토큰 예를 들어 5 + 5에서 +
+	Left     Expression
+	Operator string
+	Right    Expression
+}
+
+func (ie *InfixExpression) expressionNode()      {}
+func (ie *InfixExpression) TokenLiteral() string { return ie.Token.Literal }
+func (ie *InfixExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("(")
+	out.WriteString(ie.Left.String())
+	out.WriteString(" " + ie.Operator + " ")
+	out.WriteString(ie.Right.String())
 	out.WriteString(")")
 
 	return out.String()
