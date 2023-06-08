@@ -5,6 +5,26 @@ import (
 	"monkey/ast"
 	"monkey/lexer"
 	"monkey/token"
+	"strconv"
+)
+
+const (
+	_ int = iota //iota를 이용해 뒤에 나오는 상수에게 1씩 증가하는 숫자를 값으로제공한다.  _는 0이되고 이후에 나오는 상수는 1부터 7까지 할당받는다.
+	LOWEST
+	EQUALS      // ==
+	LESSGREATER // > or <
+	SUM         // +
+	PRODUCT     // *
+	PREFIX      // -X or !X
+	CALL        // myFunction(X)
+)
+
+// 프랫파서 구현의 핵심아이디어는 파싱함수를 토큰타입과 연관짓는 것이다.
+// 파서가 토큰 타입을 만날 때마다 파싱 함수가 적절한 표현식을 파싱하고 그 표현식을 나타내는 AST노드를 하나 반환한다. 각각의 토큰 타입은 토큰이 전위연산자인지 중위 연산자인지에 따라 최대 두 개의 파싱 함수와
+// 연관지을 수 있다.
+type (
+	prefixParseFn func() ast.Expression               //전위 파싱 함수, 전위 연산자와 연관된 토큰 타입을 만나면 이 함수가 호출된다.
+	infixParseFn  func(ast.Expression) ast.Expression //중위 파싱 함수,  여기서 받는 인수 ast.Expression는 중위연산자의 좌측에 위치한다. / 중위 연산자와 연관된 토큰 타입을 만나면 이 함수가 호출된다.
 )
 
 // 파서는 3개 필드를 가지고 있다. l, curToken, peekToken이다. l은 input에서 다음 토큰을 얻기위해 반복해서 NextToken을 호출하는 데 쓰인다.
@@ -20,23 +40,6 @@ type Parser struct {
 	infixParseFns  map[token.TokenType]infixParseFn
 }
 
-// 프랫파서 구현의 핵심아이디어는 파싱함수를 토큰타입과 연관짓는 것이다.
-// 파서가 토큰 타입을 만날 때마다 파싱 함수가 적절한 표현식을 파싱하고 그 표현식을 나타내는 AST노드를 하나 반환한다. 각각의 토큰 타입은 토큰이 전위연산자인지 중위 연산자인지에 따라 최대 두 개의 파싱 함수와
-// 연관지을 수 있다.
-type (
-	prefixParseFn func() ast.Expression               //전위 파싱 함수, 전위 연산자와 연관된 토큰 타입을 만나면 이 함수가 호출된다.
-	infixParseFun func(ast.Expression) ast.Expression //중위 파싱 함수,  여기서 받는 인수 ast.Expression는 중위연산자의 좌측에 위치한다. / 중위 연산자와 연관된 토큰 타입을 만나면 이 함수가 호출된다.
-)
-
-// parser map에 파싱함수를 추가하는 도움 메서드 두개 정의
-func (p *Parser) registerPrefix(tokenType token.TokenType, fn prefixParseFn) {
-	p.prefixParseFns[tokenType] = fn
-}
-
-func (p *Parser) registerInfix(tokenType token.TokenType, fn infixParseFn) {
-	p.infixParseFns[tokenType] = fn
-}
-
 // 자기설명적이고 nextToken메서드는 curToken과 peekToken을 다음 위치로 보내는 짧은 도움 메서드다.
 func New(l *lexer.Lexer) *Parser {
 	p := &Parser{
@@ -46,7 +49,15 @@ func New(l *lexer.Lexer) *Parser {
 	p.nextToken()
 	p.nextToken()
 
+	p.prefixParseFns = make(map[token.TokenType]prefixParseFn)
+	p.registerPrefix(token.IDENT, p.parseIdentifier)
+	p.registerPrefix(token.INT, p.parseIntegerLiteral)
+
 	return p
+}
+
+func (p *Parser) parseIdentifier() ast.Expression {
+	return &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 }
 
 func (p *Parser) parseLetStatement() *ast.LetStatement {
@@ -137,15 +148,57 @@ func (p *Parser) ParseProgram() *ast.Program {
 // parseStatement는 curToken의 타입을 파싱해서 ast.Statement로 반환한다.
 // 이렇게 반환된 ast.Statement는 AST 루트 노드의 Statements 슬라이스에 추가된다.
 // 더는 반환할 것이 없으면 *ast.Program 루트노드를 반환한다.
+// 표현식을 파악하기위한 메서드
+// monkey언어에는 let문과 return문만 있어서 나머지는 전부 표현식문으로 파싱한다.
 func (p *Parser) parseStatement() ast.Statement {
 	switch p.curToken.Type {
+	//let문일 경우
 	case token.LET:
 		return p.parseLetStatement()
+		//let문일 경우
 	case token.RETURN:
 		return p.parseReturnStatement()
+		//let문일 경우
 	default:
+		return p.parseExpressionStatement()
+	}
+}
+
+// 표현식을 파싱하는 함수
+// 반환값은 *ast.ExpressionStatement
+func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
+	stmt := &ast.ExpressionStatement{Token: p.curToken}
+	stmt.Expression = p.parseExpression(LOWEST)
+
+	if p.peekTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
+
+	return stmt
+}
+
+// parseExpression은 p.curToken.Type이 전위로 연관된 파싱함수가 있는지 검사한다. 만약 그런 파싱함수가 있으면 호출하고 없다면 nil을 반환한다.
+func (p *Parser) parseExpression(precedence int) ast.Expression {
+	prefix := p.prefixParseFns[p.curToken.Type]
+	if prefix == nil {
 		return nil
 	}
+	leftExp := prefix()
+	return leftExp
+}
+
+func (p *Parser) parseIntegerLiteral() ast.Expression {
+	lit := &ast.IntegerLiteral{Token: p.curToken}
+	value, err := strconv.ParseInt(p.curToken.Literal, 0, 64)
+	if err != nil {
+		msg := fmt.Sprintf("could not parse %q as integer", p.curToken.Literal)
+		p.errors = append(p.errors, msg)
+		return nil
+	}
+
+	lit.Value = value
+
+	return lit
 }
 
 // expectPeek 메서드내에서 nextToken을 호출해 토큰을 진행시킨다.
@@ -162,4 +215,13 @@ func (p *Parser) expectPeek(t token.TokenType) bool {
 		p.peekError(t)
 		return false
 	}
+}
+
+// parser map에 파싱함수를 추가하는 도움 메서드 두개 정의
+func (p *Parser) registerPrefix(tokenType token.TokenType, fn prefixParseFn) {
+	p.prefixParseFns[tokenType] = fn
+}
+
+func (p *Parser) registerInfix(tokenType token.TokenType, fn infixParseFn) {
+	p.infixParseFns[tokenType] = fn
 }

@@ -37,6 +37,16 @@ type Program struct {
 	Statements []Statement
 }
 
+// ast.Expression 인터페이스를 충족한다.
+type IntegerLiteral struct {
+	Token token.Token
+	Value int64 //ast.Identifier와 구조체 자체에서 눈에 띄게 다른 점은 Value가 문자열이 아니라 int64다. 소스코드에서 정수 리터럴이 표현하는 문자의 실제값을 담았다.
+}
+
+func (il *IntegerLiteral) expressionNode()      {}
+func (il *IntegerLiteral) TokenLiteral() string { return il.Token.Literal }
+func (il *IntegerLiteral) String() string       { return il.Token.Literal }
+
 func (p *Program) TokenLiteral() string {
 	if len(p.Statements) > 0 {
 		return p.Statements[0].TokenLiteral()
@@ -45,9 +55,28 @@ func (p *Program) TokenLiteral() string {
 	}
 }
 
+type PrefixExpression struct {
+	Token    token.Token //ㅓㄴ위 연산자 토큰, 예를 들면 !, -
+	Operator string
+	Right    Expression
+}
+
+func (pe *PrefixExpression) expressionNode()      {}
+func (pe *PrefixExpression) TokenLiteral() string { return pe.Token.Literal }
+func (pe *PrefixExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("(")
+	out.WriteString(pe.Operator)
+	out.WriteString(pe.Right.String())
+	out.WriteString(")")
+
+	return out.String()
+}
+
 // 다음 메서드가 있으면 디버깅 목적으로 AST 노드를 출력해볼 수 있고 또 다른 AST 노드와 비교도 할 수 있다.
 // 다음 String 메서드는 작업 대부분을 *ast.Program.Statements에 위임(delegate)한다.
-func (p *Parser) String() string {
+func (p *Program) String() string {
 	//버퍼를 선언
 	var out bytes.Buffer
 
