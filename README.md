@@ -67,6 +67,20 @@
 
 <expression> <infix operator> <expression>
 
+## if-else 조건식
+
+if (<condition>) <consequence> else <alternative>
+
+## 함수리터럴
+
+fn <parameters> <blockstatement>
+
+## 파싱함수 추가 절차
+
+1. AST 노드를 정의
+2. 테스트 코드 작성
+3. 파싱 코드를 작성해 테스트를 통과
+
 #### 프랫파싱은 어떻게 동작하는가
 
 ##### 다음은 1 + 2 + 3 ;을 파싱했을 때 나온 결과물이다.

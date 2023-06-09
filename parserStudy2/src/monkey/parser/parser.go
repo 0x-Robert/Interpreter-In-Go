@@ -87,12 +87,15 @@ func New(l *lexer.Lexer) *Parser {
 	//그룹 표현식
 	p.registerPrefix(token.LPAREN, p.parseGroupedExpression)
 
+	//if
+	p.registerPrefix(token.IF, p.parseIfExpression)
+
 	return p
 }
 
 // parsePrefixExpression과 다른 점은 left를 인수로 받는 점
 func (p *Parser) parseInfixExpression(left ast.Expression) ast.Expression {
-	defer untrace(trace("parseInfixExpression"))
+	//defer untrace(trace("parseInfixExpression"))
 	expression := &ast.InfixExpression{
 		Token:    p.curToken,
 		Operator: p.curToken.Literal,
@@ -124,7 +127,7 @@ func (p *Parser) curPrecedence() int {
 }
 
 func (p *Parser) parsePrefixExpression() ast.Expression {
-	defer untrace(trace("parsePrefixExpression"))
+	//defer untrace(trace("parsePrefixExpression"))
 	//ast.PrefixExpression를 만든다.
 	expression := &ast.PrefixExpression{
 		Token:    p.curToken,
@@ -185,6 +188,7 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	return stmt
 }
 
+// 그룹 표현식을 파싱하기 위한 함수
 func (p *Parser) parseGroupedExpression() ast.Expression {
 	p.nextToken()
 
@@ -194,6 +198,60 @@ func (p *Parser) parseGroupedExpression() ast.Expression {
 		return nil
 	}
 	return exp
+}
+
+// if문 파싱하기 위한 함수
+func (p *Parser) parseIfExpression() ast.Expression {
+	expression := &ast.IfExpression{Token: p.curToken}
+
+	if !p.expectPeek(token.LPAREN) {
+		return nil
+	}
+
+	p.nextToken()
+
+	expression.Condition = p.parseExpression(LOWEST)
+
+	if !p.expectPeek(token.RPAREN) {
+		return nil
+	}
+
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+
+	expression.Consequence = p.parseBlockStatement()
+
+	if p.peekTokenIs(token.ELSE) {
+		p.nextToken()
+
+		if !p.expectPeek(token.LBRACE) {
+			return nil
+		}
+
+		expression.Alternative = p.parseBlockStatement()
+	}
+
+	return expression
+}
+
+// if 와 else에 있는 블록 스테이츠먼츠를 파싱하기 위한 함수다.
+// p.curToken과 p.peekToken을 필요한 만큼만 진행시켰기 때문에,parseBlockStatements가 호출된 시점에 p.curToken은 { 을 보고 있을 것이고 토큰 타입은 token.LBRACE가 될 것이다.
+func (p *Parser) parseBlockStatement() *ast.BlockStatement {
+	block := &ast.BlockStatement{Token: p.curToken}
+	block.Statements = []ast.Statement{}
+
+	p.nextToken()
+
+	for !p.curTokenIs(token.RBRACE) && !p.curTokenIs(token.EOF) {
+		stmt := p.parseStatement()
+		if stmt != nil {
+			block.Statements = append(block.Statements, stmt)
+		}
+		p.nextToken()
+	}
+
+	return block
 }
 
 func (p *Parser) parseBoolean() ast.Expression {
@@ -264,7 +322,7 @@ func (p *Parser) parseStatement() ast.Statement {
 // 표현식을 파싱하는 함수
 // 반환값은 *ast.ExpressionStatement
 func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
-	defer untrace(trace("parseExpressionStatement"))
+	//defer untrace(trace("parseExpressionStatement"))
 	stmt := &ast.ExpressionStatement{Token: p.curToken}
 	stmt.Expression = p.parseExpression(LOWEST)
 
@@ -283,7 +341,7 @@ func (p *Parser) noPrefixParseFnError(t token.TokenType) {
 // parseExpression은 p.curToken.Type이 전위로 연관된 파싱함수가 있는지 검사한다. 만약 그런 파싱함수가 있으면 호출하고 없다면 nil을 반환한다.
 // 프랫파서의 요체
 func (p *Parser) parseExpression(precedence int) ast.Expression {
-	defer untrace(trace("parseExpression"))
+	//defer untrace(trace("parseExpression"))
 	prefix := p.prefixParseFns[p.curToken.Type]
 	if prefix == nil {
 		p.noPrefixParseFnError(p.curToken.Type)
@@ -307,7 +365,7 @@ func (p *Parser) parseExpression(precedence int) ast.Expression {
 }
 
 func (p *Parser) parseIntegerLiteral() ast.Expression {
-	defer untrace(trace("parseExpression"))
+	//defer untrace(trace("parseExpression"))
 	lit := &ast.IntegerLiteral{Token: p.curToken}
 	value, err := strconv.ParseInt(p.curToken.Literal, 0, 64)
 	if err != nil {

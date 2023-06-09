@@ -3,6 +3,7 @@ package ast
 import (
 	"bytes"
 	"monkey/token"
+	"strings"
 )
 
 //생성할 AST는 노드로만 구성될 것이고 각각의 노드는 서로 연결될 것이다. AST도 결국 트리다.
@@ -110,6 +111,7 @@ func (p *Program) String() string {
 	return out.String()
 }
 
+// 식별자를 파싱하기 위한 ast 노드 정의
 type Identifier struct {
 	Token token.Token //token.IDENT 토큰
 	Value string
@@ -188,6 +190,7 @@ func (rs *ReturnStatement) String() string {
 	return out.String()
 }
 
+// 표현식
 func (es *ExpressionStatement) String() string {
 	if es.Expression != nil {
 		return es.Expression.String()
@@ -203,3 +206,75 @@ type Boolean struct {
 func (b *Boolean) expressionNode()      {}
 func (b *Boolean) TokenLiteral() string { return b.Token.Literal }
 func (b *Boolean) String() string       { return b.Token.Literal }
+
+// if (<condition) <consequence> else <alternative>
+type IfExpression struct {
+	Token       token.Token     //if 토큰
+	Condition   Expression      //조건식을 담는다.
+	Consequence *BlockStatement //조건의 결과와 대안을 가리킨다.
+	Alternative *BlockStatement //조건의 결과와 대안을 가리킨다.
+}
+
+func (ie *IfExpression) expressionNode()      {}
+func (ie *IfExpression) TokenLiteral() string { return ie.Token.Literal }
+func (ie *IfExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("if")
+	out.WriteString(ie.Condition.String())
+	out.WriteString("if")
+	out.WriteString(ie.Condition.String())
+
+	if ie.Alternative != nil {
+		out.WriteString("else ")
+		out.WriteString(ie.Alternative.String())
+	}
+
+	return out.String()
+}
+
+type BlockStatement struct {
+	Token      token.Token //토큰
+	Statements []Statement
+}
+
+func (bs *BlockStatement) statementNode()       {}
+func (bs *BlockStatement) TokenLiteral() string { return bs.Token.Literal }
+func (bs *BlockStatement) String() string {
+
+	var out bytes.Buffer
+
+	for _, s := range bs.Statements {
+		out.WriteString(s.String())
+	}
+
+	return out.String()
+}
+
+type FunctionLiteral struct {
+	Token      token.Token // 'fn' 토큰
+	Parameters []*Identifier
+	Body       *BlockStatement
+}
+
+func (fl *FunctionLiteral) expressionNode()
+func (fl *FunctionLiteral) TokenLiteral() string { return fl.Token.Literal }
+func (fl *FunctionLiteral) String() string {
+
+	var out bytes.Buffer
+
+	params := []string{}
+	for _, p := range fl.Parameters {
+		params = append(params, p.String())
+	}
+
+	out.WriteString(fl.TokenLiteral())
+	out.WriteString("(")
+	out.WriteString(strings.Join(params, ", "))
+	out.WriteString(")")
+	out.WriteString(fl.Body.String())
+
+	return out.String()
+}
+
+
