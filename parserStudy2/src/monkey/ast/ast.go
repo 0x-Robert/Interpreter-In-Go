@@ -194,3 +194,12 @@ func (es *ExpressionStatement) String() string {
 	}
 	return ""
 }
+
+type Boolean struct {
+	Token token.Token
+	Value bool //bool 타입을 가짐, true or false, go언어 bool 값
+}
+
+func (b *Boolean) expressionNode()      {}
+func (b *Boolean) TokenLiteral() string { return b.Token.Literal }
+func (b *Boolean) String() string       { return b.Token.Literal }
